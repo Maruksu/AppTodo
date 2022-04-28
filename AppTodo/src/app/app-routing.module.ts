@@ -11,6 +11,10 @@ const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'arrastavel',
+    loadChildren: () => import('./arrastavel/arrastavel.module').then( m => m.ArrastavelPageModule)
+  },
 ];
 
 @NgModule({
