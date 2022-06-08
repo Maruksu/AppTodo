@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActionSheetController, AlertController, ToastController } from '@ionic/angular';
+import { TodoService } from '../services/todo.service';
 
 @Component({
   selector: 'app-home',
@@ -7,9 +8,32 @@ import { ActionSheetController, AlertController, ToastController } from '@ionic/
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
+  [x: string]: any;
 
   
-  constructor(private alertCtrl: AlertController, private toastCtrl: ToastController, private actionSheetCtrl: ActionSheetController) {}
+  constructor(private alertCtrl: AlertController, 
+    private toastCtrl: ToastController, 
+    private actionSheetCtrl: ActionSheetController,
+    private todoService: TodoService) {
+    
+    this.carregaTarefa();
+  }
+
+  carregaTarefa(){
+    this.todoService.listaTarefa()
+    .then(async(resposta: any[])=>{
+      console.table(resposta);
+      this.tarefas = resposta;
+    })
+    .catch(async(erro)=>{
+      const toast = await this.toastCtrl.create({
+        message: 'Erro ao realizar operação!',
+        duration: 2000,
+        position:'top'
+      });
+      toast.present(); 
+    });
+  }
 
   tarefas: any[] = [];
 
@@ -57,11 +81,30 @@ export class HomePage {
       toast.present();
       return;
     }
-    const tarefa = {nome:novaTarefa, realizada: false};
+    const tarefa = {nome:novaTarefa, realizada: 0};
     this.tarefas.push(tarefa);
-    this.salvaLocalStorage();
 
+    this.todoService.adicionaTarefa(tarefa.nome, tarefa.realizada)
+    .then(async(resposta)=> {
+      const toast = await this.toastCtrl.create({
+        message:'Operação Realizada com Sucesso!',
+        duration: 2000,
+        position: 'top'
+      });
+      toast.present();
+
+      this.carregaTarefa();
+    })
+    .catch(async(erro)=>{
+      const toast = await this.toastCtrl.create({
+        message: 'Erro ao realizar operação!',
+        duration: 2000,
+        position: 'top'
+      });
+      toast.present(); 
+    });
   }
+
   salvaLocalStorage(){
     localStorage.setItem('tarefaUsuario', JSON.stringify(this.tarefas));
 
